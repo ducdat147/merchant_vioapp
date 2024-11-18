@@ -1,4 +1,4 @@
- from rest_framework import status
+from rest_framework import status
 from django.urls import reverse
 from core.tests.test_setup import TestSetUp
 from core.products.models import Product
