@@ -167,3 +167,61 @@ class ServiceSerializer(serializers.ModelSerializer):
             end_date__gte=timezone.now()
         )
         return PromotionSerializer(active_promotions, many=True).data
+
+class AddServiceToPromotionSerializer(serializers.Serializer):
+    promotion_id = serializers.UUIDField()
+    service_id = serializers.UUIDField()
+
+    def validate(self, data):
+        try:
+            promotion = Promotion.objects.get(id=data['promotion_id'])
+            service = Service.objects.get(id=data['service_id'])
+            
+            # Kiểm tra xem service đã được thêm vào promotion chưa
+            if service in promotion.services.all():
+                raise serializers.ValidationError(
+                    "Service already added to this promotion"
+                )
+                
+            # Kiểm tra xem service có thuộc về merchant không
+            if service.merchant != self.context['request'].user.merchant:
+                raise serializers.ValidationError(
+                    "You don't have permission to add this service"
+                )
+                
+            data['promotion'] = promotion
+            data['service'] = service
+            return data
+            
+        except Promotion.DoesNotExist:
+            raise serializers.ValidationError("Promotion not found")
+        except Service.DoesNotExist:
+            raise serializers.ValidationError("Service not found")
+
+class AddProductToPromotionSerializer(serializers.Serializer):
+    promotion_id = serializers.UUIDField()
+    product_id = serializers.UUIDField()
+
+    def validate(self, data):
+        try:
+            promotion = Promotion.objects.get(id=data['promotion_id'])
+            product = Product.objects.get(id=data['product_id'])
+            
+            if product in promotion.products.all():
+                raise serializers.ValidationError(
+                    "Product already added to this promotion"
+                )
+                
+            if product.merchant != self.context['request'].user.merchant:
+                raise serializers.ValidationError(
+                    "You don't have permission to add this product"
+                )
+                
+            data['promotion'] = promotion
+            data['product'] = product
+            return data
+            
+        except Promotion.DoesNotExist:
+            raise serializers.ValidationError("Promotion not found")
+        except Product.DoesNotExist:
+            raise serializers.ValidationError("Product not found")

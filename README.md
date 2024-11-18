@@ -4,28 +4,100 @@ Backend API cho ứng dụng quản lý merchant, sản phẩm và dịch vụ.
 
 ## Yêu cầu hệ thống
 
-- Python 3.12+
-- Django 5.1.3
+- Docker và Docker Compose
+- hoặc:
+  - Python 3.12+
+  - PostgreSQL 15+
+  - Memcached 1.6+
 
 ## Công nghệ sử dụng
 
+- Django 5.1.3
 - Django REST Framework 3.15.2
+- PostgreSQL 15
+- Memcached 1.6
+- Docker & Docker Compose
 - Simple JWT Authentication
 - Swagger/OpenAPI Documentation
 - pytest và Coverage.py cho testing
 
-## Cài đặt môi trường phát triển
+## Cài đặt và Chạy với Docker
+
+1. Clone repository:
+
+```bash
+git clone https://github.com/ducdat147/merchant_vioapp.git
+cd merchant-app
+```
+
+2. Tạo file .env từ .env.example:
+
+```bash
+cp .env.example .env
+```
+
+3. Build và chạy containers:
+
+```bash
+docker compose up --build
+```
+
+Ứng dụng sẽ chạy tại http://localhost:8000/
+
+### Các lệnh Docker hữu ích
+
+```bash
+# Khởi động services
+docker compose up -d
+```
+
+```bash
+# Dừng services
+docker compose down
+```
+
+```bash
+# Xem logs
+docker compose logs -f
+```
+
+```bash
+# Chạy migrations
+docker compose exec web python manage.py migrate
+```
+
+```bash
+# Tạo superuser
+docker compose exec web python manage.py createsuperuser
+```
+
+```bash
+# Truy cập Django shell
+docker compose exec web python manage.py shell
+```
+
+```bash
+# Collect static files
+docker compose exec web python manage.py collectstatic
+```
+
+```bash
+# Restart services
+docker compose restart
+```
+
+## Cài đặt môi trường phát triển (không dùng Docker)
 
 1. Tạo môi trường ảo:
 
-##### Windows
+Windows:
 
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
-##### Linux/MacOS
+Linux/MacOS:
 
 ```bash
 python3 -m venv venv
@@ -43,6 +115,8 @@ pip install -r requirements.txt
 ```env
 DEBUG=True
 SECRET_KEY=your-secret-key
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/merchant_db
+MEMCACHED_LOCATION=127.0.0.1:11211
 ```
 
 4. Chạy migrations:
@@ -50,14 +124,6 @@ SECRET_KEY=your-secret-key
 ```bash
 python manage.py migrate
 ```
-
-## Chạy development server
-
-```bash
-python manage.py runserver
-```
-
-Server sẽ chạy tại http://localhost:8000/
 
 ## API Documentation
 
@@ -87,60 +153,37 @@ coverage html
 
 Report sẽ được tạo trong thư mục htmlcov/
 
-## Cấu trúc project
+## Cấu trúc Project
 
 ```
-merchant_vioapp/
-├── core/
-│   ├── accounts/         # User authentication và authorization
-│   ├── merchants/        # Merchant management
-│   ├── products/         # Products, services và promotions
-│   └── tests/           # Test suites
-├── merchant_app/         # Project settings
-└── requirements.txt      # Project dependencies
+merchant-app/
+├── core/                   # Core application modules
+│   ├── accounts/          # User authentication & management
+│   ├── merchants/         # Merchant management
+│   └── products/          # Products & services management
+├── merchant_app/          # Project configuration
+├── scripts/               # Utility scripts
+├── docker compose.yml     # Docker compose configuration
+├── Dockerfile            # Docker build configuration
+├── requirements.txt      # Python dependencies
+└── README.md            # Project documentation
 ```
 
-## API Endpoints
+## Môi trường Production
 
-### Authentication
-- POST /api/auth/register/ - Đăng ký user mới
-- POST /api/auth/login/ - Đăng nhập và lấy token
-- POST /api/auth/token/refresh/ - Refresh token
+Khi triển khai lên môi trường production, cần lưu ý:
 
-### Merchants
-- POST /api/merchants/create/ - Tạo merchant mới
-- GET /api/merchants/{id}/ - Lấy thông tin merchant
-- PUT /api/merchants/{id}/ - Cập nhật thông tin merchant
-- DELETE /api/merchants/{id}/ - Xóa merchant
+1. Cập nhật các biến môi trường:
+- Tắt DEBUG
+- Thay đổi SECRET_KEY
+- Cập nhật ALLOWED_HOSTS
+- Cấu hình DATABASE_URL
+- Cấu hình MEMCACHED_LOCATION
 
-### Products
-- GET /api/products/ - Danh sách sản phẩm
-- POST /api/products/ - Tạo sản phẩm mới
-- GET /api/products/{id}/ - Chi tiết sản phẩm
-- PUT /api/products/{id}/ - Cập nhật sản phẩm
-- DELETE /api/products/{id}/ - Xóa sản phẩm
-
-### Services
-- GET /api/services/ - Danh sách dịch vụ
-- POST /api/services/ - Tạo dịch vụ mới
-- GET /api/services/{id}/ - Chi tiết dịch vụ
-- PUT /api/services/{id}/ - Cập nhật dịch vụ
-- DELETE /api/services/{id}/ - Xóa dịch vụ
-
-### Promotions
-- GET /api/promotions/ - Danh sách khuyến mãi
-- POST /api/promotions/ - Tạo khuyến mãi mới
-- GET /api/promotions/{id}/ - Chi tiết khuyến mãi
-- PUT /api/promotions/{id}/ - Cập nhật khuyến mãi
-- DELETE /api/promotions/{id}/ - Xóa khuyến mãi
-
-## Contributing
-
-1. Fork project
-2. Tạo feature branch (git checkout -b feature/AmazingFeature)
-3. Commit changes (git commit -m 'Add some AmazingFeature')
-4. Push to branch (git push origin feature/AmazingFeature)
-5. Tạo Pull Request
+2. Sử dụng HTTPS
+3. Cấu hình CORS đúng domain
+4. Thiết lập backup cho database
+5. Monitoring và logging
 
 ## License
 

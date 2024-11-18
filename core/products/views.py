@@ -15,6 +15,8 @@ from core.products.serializers import (
     ProductSerializer,
     ServiceSerializer,
     PromotionSerializer,
+    AddServiceToPromotionSerializer,
+    AddProductToPromotionSerializer,
 )
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -133,53 +135,50 @@ class PromotionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         ).distinct()
 
 
-class AddProductToPromotionView(generics.UpdateAPIView):
+class AddProductToPromotionView(generics.CreateAPIView):
+    serializer_class = AddProductToPromotionSerializer
     permission_classes = [permissions.IsAuthenticated]
     
-    def update(self, request, *args, **kwargs):
-        promotion_id = kwargs.get('promotion_id')
-        product_id = kwargs.get('product_id')
+    def perform_create(self, serializer):
+        promotion = serializer.validated_data['promotion']
+        product = serializer.validated_data['product']
+        promotion.products.add(product)
         
-        try:
-            promotion = Promotion.objects.get(id=promotion_id)
-            product = Product.objects.get(
-                id=product_id, 
-                merchant=request.user.merchant
-            )
-            
-            promotion.products.add(product)
-            return Response(
-                {"message": "Product added to promotion successfully"},
-                status=status.HTTP_200_OK
-            )
-        except (Promotion.DoesNotExist, Product.DoesNotExist):
-            return Response(
-                {"error": "Promotion or Product not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+    def post(self, request, *args, **kwargs):
+        mutable_data = request.data.copy()
+        mutable_data['promotion_id'] = kwargs.get('promotion_id')
+        mutable_data['product_id'] = kwargs.get('product_id')
+        
+        serializer = self.get_serializer(data=mutable_data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        return Response(
+            {"message": "Product added to promotion successfully"},
+            status=status.HTTP_201_CREATED
+        )
 
 
-class AddServiceToPromotionView(generics.UpdateAPIView):
+class AddServiceToPromotionView(generics.CreateAPIView):
+    serializer_class = AddServiceToPromotionSerializer
     permission_classes = [permissions.IsAuthenticated]
     
-    def update(self, request, *args, **kwargs):
-        promotion_id = kwargs.get('promotion_id')
-        service_id = kwargs.get('service_id')
+    def perform_create(self, serializer):
+        promotion = serializer.validated_data['promotion']
+        service = serializer.validated_data['service']
+        promotion.services.add(service)
         
-        try:
-            promotion = Promotion.objects.get(id=promotion_id)
-            service = Service.objects.get(
-                id=service_id, 
-                merchant=request.user.merchant
-            )
-            
-            promotion.services.add(service)
-            return Response(
-                {"message": "Service added to promotion successfully"},
-                status=status.HTTP_200_OK
-            )
-        except (Promotion.DoesNotExist, Service.DoesNotExist):
-            return Response(
-                {"error": "Promotion or Service not found"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+    def post(self, request, *args, **kwargs):
+        # Thêm promotion_id và service_id vào request data
+        mutable_data = request.data.copy()
+        mutable_data['promotion_id'] = kwargs.get('promotion_id')
+        mutable_data['service_id'] = kwargs.get('service_id')
+        
+        serializer = self.get_serializer(data=mutable_data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        return Response(
+            {"message": "Service added to promotion successfully"},
+            status=status.HTTP_201_CREATED
+        )
