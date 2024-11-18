@@ -54,7 +54,6 @@ class TestSetUp(APITestCase):
 
     @staticmethod
     def create_test_image():
-        """Tạo temporary image file cho testing"""
         with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as f:
             image = Image.new('RGB', (100, 100), 'white')
             image.save(f, 'JPEG')

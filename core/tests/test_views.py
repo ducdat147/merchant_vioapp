@@ -7,7 +7,6 @@ import os
 
 class TestProductViews(TestSetUp):
     def test_create_product_success(self):
-        """Test tạo sản phẩm mới thành công"""
         with open(self.image.name, 'rb') as image_file:
             data = {
                 'name': 'Test Product',
@@ -31,7 +30,6 @@ class TestProductViews(TestSetUp):
             self.assertEqual(Product.objects.get().name, 'Test Product')
 
     def test_create_product_without_required_fields(self):
-        """Test tạo sản phẩm thiếu thông tin bắt buộc"""
         response = self.client.post(
             reverse('products:product-list'),
             {},
@@ -43,7 +41,6 @@ class TestProductViews(TestSetUp):
         self.assertIn('price', response.data)
 
     def test_get_product_list(self):
-        """Test lấy danh sách sản phẩm"""
         # Tạo một số sản phẩm test
         products = [
             Product.objects.create(
@@ -61,7 +58,6 @@ class TestProductViews(TestSetUp):
         self.assertEqual(response.data['count'], 3)
 
     def test_get_product_detail(self):
-        """Test lấy chi tiết sản phẩm"""
         product = Product.objects.create(
             merchant=self.merchant,
             name='Test Product',
