@@ -44,6 +44,11 @@ class ProductListCreateView(generics.ListCreateAPIView):
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated]
     
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):  # Xử lý cho swagger docs
+            return Product.objects.none()
+        return Product.objects.filter(merchant=self.request.user.merchant)
+    
     @swagger_auto_schema(
         operation_description="List all products for authenticated merchant",
         responses={
@@ -71,7 +76,11 @@ class ProductListCreateView(generics.ListCreateAPIView):
         }
     )
     def post(self, request, *args, **kwargs):
+        print("Request data:", request.data)
         return super().post(request, *args, **kwargs)
+    
+    def perform_create(self, serializer):
+        serializer.save(merchant=self.request.user.merchant)
 
 
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):

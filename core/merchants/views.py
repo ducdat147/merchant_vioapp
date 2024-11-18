@@ -23,6 +23,7 @@ class MerchantCreateView(generics.CreateAPIView):
 class MerchantRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MerchantSerializer
     permission_classes = [permissions.IsAuthenticated]
+    queryset = Merchant.objects.all()
     
     @swagger_auto_schema(
         operation_description="Get merchant details",

@@ -68,6 +68,7 @@ class ProductSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False
     )
+    image = serializers.ImageField(required=False)
 
     class Meta:
         model = Product
