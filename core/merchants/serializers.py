@@ -12,9 +12,7 @@ class MerchantSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'created_at', 'updated_at')
 
     def create(self, validated_data):
-        # Lấy user từ request context
         user = self.context['request'].user
-        # Kiểm tra xem user đã có merchant chưa
         if Merchant.objects.filter(user=user).exists():
             raise serializers.ValidationError("User already has a merchant account")
         return Merchant.objects.create(user=user, **validated_data)

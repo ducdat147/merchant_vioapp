@@ -13,8 +13,6 @@ from core.products.models import (
 from decimal import Decimal
 from django.utils import timezone
 from datetime import timedelta
-from django.core.files.uploadedfile import SimpleUploadedFile
-import os
 from PIL import Image
 import io
 
@@ -23,43 +21,43 @@ User = get_user_model()
 
 class ProductTests(APITestCase):
     def setUp(self):
-        # Tạo user test
+        # Create test user
         self.user = User.objects.create_user(
             username='testuser',
             password='testpass123'
         )
         
-        # Tạo merchant
+        # Create merchant
         self.merchant = Merchant.objects.create(
             user=self.user,
             name='Test Merchant',
             address='Test Address'
         )
         
-        # Tạo category test
+        # Create test category
         self.category = Category.objects.create(
             name='Test Category',
             description='Test Description'
         )
         
-        # Tạo hashtag test
+        # Create test hashtag
         self.hashtag = Hashtag.objects.create(
             name='testhashtag'
         )
         
-        # Tạo keyword test
+        # Create test keyword
         self.keyword = Keyword.objects.create(
             name='testkeyword'
         )
         
-        # Đăng nhập user
+        # Login user
         self.client.force_authenticate(user=self.user)
 
     def test_create_product(self):
         url = reverse('products:product-list')
         
-        # Tạo một file ảnh test hợp lệ
-        # Tạo ảnh test bằng PIL
+        # Create a valid test image file
+        # Create test image using PIL
         file = io.BytesIO()
         image = Image.new('RGB', (100, 100), 'white')
         image.save(file, 'JPEG')
@@ -109,7 +107,7 @@ class PromotionTests(APITestCase):
         )
         self.client.force_authenticate(user=self.user)
         
-        # Tạo product test
+        # Create test product
         self.product = Product.objects.create(
             merchant=self.merchant,
             name='Test Product',

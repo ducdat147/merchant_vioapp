@@ -7,8 +7,6 @@ from core.accounts.serializers import UserSerializer, LoginSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-# Create your views here.
-
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserSerializer

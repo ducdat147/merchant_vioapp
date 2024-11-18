@@ -1,5 +1,5 @@
 from django.db.models import Q
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from core.products.models import (
     Category,
     Hashtag,
@@ -21,7 +21,9 @@ from core.products.serializers import (
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.response import Response
-from rest_framework import status
+from django.core.exceptions import ObjectDoesNotExist
+from core.permissions import HasMerchantPermission
+from django.core.exceptions import PermissionDenied
 
 
 class CategoryViewSet(generics.ListCreateAPIView):
@@ -44,27 +46,39 @@ class KeywordViewSet(generics.ListCreateAPIView):
 
 class ProductListCreateView(generics.ListCreateAPIView):
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasMerchantPermission]
     
     def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):  # Xử lý cho swagger docs
+        # Check if user is authenticated first
+        if not self.request.user.is_authenticated:
             return Product.objects.none()
-        return Product.objects.filter(merchant=self.request.user.merchant)
+        
+        try:
+            merchant = self.request.user.merchant
+            return Product.objects.filter(merchant=merchant)
+        except ObjectDoesNotExist:
+            return Product.objects.none()
+            
+    def create(self, request, *args, **kwargs):
+        try:
+            if not hasattr(request.user, 'merchant'):
+                return Response(
+                    {"error": "You need to create a merchant before adding products"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            return super().create(request, *args, **kwargs)
+        except ObjectDoesNotExist:
+            return Response(
+                {"error": "You need to create a merchant before adding products"},
+                status=status.HTTP_403_FORBIDDEN
+            )
     
     @swagger_auto_schema(
         operation_description="List all products for authenticated merchant",
         responses={
             200: ProductSerializer(many=True),
             401: "Unauthorized"
-        },
-        manual_parameters=[
-            openapi.Parameter(
-                'page', 
-                openapi.IN_QUERY, 
-                description="Page number", 
-                type=openapi.TYPE_INTEGER
-            )
-        ]
+        }
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
@@ -90,9 +104,12 @@ class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        if getattr(self, 'swagger_fake_view', False):  # Xử lý cho swagger docs
+        try:
+            if getattr(self, 'swagger_fake_view', False):
+                return Product.objects.none()
+            return Product.objects.filter(merchant=self.request.user.merchant)
+        except ObjectDoesNotExist:
             return Product.objects.none()
-        return Product.objects.filter(merchant=self.request.user.merchant)
 
 
 class ServiceListCreateView(generics.ListCreateAPIView):
@@ -100,7 +117,24 @@ class ServiceListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        return Service.objects.filter(merchant=self.request.user.merchant)
+        try:
+            return Service.objects.filter(merchant=self.request.user.merchant)
+        except ObjectDoesNotExist:
+            return Service.objects.none()
+            
+    def create(self, request, *args, **kwargs):
+        try:
+            if not hasattr(request.user, 'merchant'):
+                return Response(
+                    {"error": "You need to create a merchant before adding services"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            return super().create(request, *args, **kwargs)
+        except ObjectDoesNotExist:
+            return Response(
+                {"error": "You need to create a merchant before adding services"},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
 
 class ServiceRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -108,7 +142,10 @@ class ServiceRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        return Service.objects.filter(merchant=self.request.user.merchant)
+        try:
+            return Service.objects.filter(merchant=self.request.user.merchant)
+        except ObjectDoesNotExist:
+            return Service.objects.none()
 
 
 class PromotionListCreateView(generics.ListCreateAPIView):
@@ -116,11 +153,28 @@ class PromotionListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        merchant = self.request.user.merchant
-        return Promotion.objects.filter(
-            Q(products__merchant=merchant) | 
-            Q(services__merchant=merchant)
-        ).distinct()
+        try:
+            merchant = self.request.user.merchant
+            return Promotion.objects.filter(
+                Q(products__merchant=merchant) | 
+                Q(services__merchant=merchant)
+            ).distinct()
+        except ObjectDoesNotExist:
+            return Promotion.objects.none()
+            
+    def create(self, request, *args, **kwargs):
+        try:
+            if not hasattr(request.user, 'merchant'):
+                return Response(
+                    {"error": "You need to create a merchant before creating promotions"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            return super().create(request, *args, **kwargs)
+        except ObjectDoesNotExist:
+            return Response(
+                {"error": "You need to create a merchant before creating promotions"},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
 
 class PromotionRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -169,7 +223,7 @@ class AddServiceToPromotionView(generics.CreateAPIView):
         promotion.services.add(service)
         
     def post(self, request, *args, **kwargs):
-        # Thêm promotion_id và service_id vào request data
+        # Add promotion_id and service_id to request data
         mutable_data = request.data.copy()
         mutable_data['promotion_id'] = kwargs.get('promotion_id')
         mutable_data['service_id'] = kwargs.get('service_id')

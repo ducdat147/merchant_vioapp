@@ -9,14 +9,14 @@ User = get_user_model()
 
 class TestSetUp(APITestCase):
     def setUp(self):
-        # Tạo user test
+        # Create test user
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
             password='testpass123'
         )
         
-        # Tạo merchant
+        # Create merchant
         self.merchant = Merchant.objects.create(
             user=self.user,
             name='Test Merchant',
@@ -24,7 +24,7 @@ class TestSetUp(APITestCase):
             address='Test Address'
         )
         
-        # Tạo category, hashtag, keyword test
+        # Create category, hashtag, keyword test
         self.category = Category.objects.create(
             name='Test Category',
             description='Test Description'
@@ -38,7 +38,7 @@ class TestSetUp(APITestCase):
             name='testkeyword'
         )
         
-        # Tạo temporary image cho test
+        # Create temporary image cho test
         self.image = self.create_test_image()
         
         # Authenticate user

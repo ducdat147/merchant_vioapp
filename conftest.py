@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings
 import logging
 
-# Tắt các log không cần thiết trong quá trình test
+# Disable unnecessary logs during testing
 logging.disable(logging.WARNING)
 
 def pytest_configure():

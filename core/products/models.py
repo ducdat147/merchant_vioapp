@@ -83,8 +83,10 @@ class Promotion(BaseModel):
         db_table = 'promotions'
         
     def clean(self):
-        if self.start_date >= self.end_date:
-            raise ValidationError('End date must be after start date')
+        if self.start_date and self.end_date and self.start_date >= self.end_date:
+            raise ValidationError(
+                "End date must be after start date"
+            )
         
     def save(self, *args, **kwargs):
         self.clean()

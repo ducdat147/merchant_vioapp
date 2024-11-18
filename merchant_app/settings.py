@@ -19,7 +19,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Khởi tạo environ
+# Init environ
 env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ['localhost', '127.0.0.1']),
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_yasg',
+    'phonenumber_field',
     'rest_framework_simplejwt',
     'core.accounts',
     'core.merchants',
@@ -191,14 +192,18 @@ CACHES = {
     }
 }
 
-# Cache time to live là 15 phút
+# Cache time to live is 15 minutes
 CACHE_TTL = 60 * 15
 
-# Các key patterns cho cache
+# Cache key patterns
 CACHE_KEY_PREFIX = 'merchant_'
 CACHE_MIDDLEWARE_SECONDS = 60 * 15
 CACHE_MIDDLEWARE_KEY_PREFIX = CACHE_KEY_PREFIX
 
-# Cache settings cho session
+# Cache settings for session
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
+
+# Phone number settings
+PHONENUMBER_DEFAULT_REGION = 'VN'
+PHONENUMBER_DB_FORMAT = 'E164'  # Format +84xxxxxxxxx

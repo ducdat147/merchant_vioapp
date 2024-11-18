@@ -177,13 +177,11 @@ class AddServiceToPromotionSerializer(serializers.Serializer):
             promotion = Promotion.objects.get(id=data['promotion_id'])
             service = Service.objects.get(id=data['service_id'])
             
-            # Kiểm tra xem service đã được thêm vào promotion chưa
             if service in promotion.services.all():
                 raise serializers.ValidationError(
                     "Service already added to this promotion"
                 )
                 
-            # Kiểm tra xem service có thuộc về merchant không
             if service.merchant != self.context['request'].user.merchant:
                 raise serializers.ValidationError(
                     "You don't have permission to add this service"

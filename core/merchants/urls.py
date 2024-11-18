@@ -1,5 +1,9 @@
 from django.urls import path
-from .views import MerchantCreateView, MerchantRetrieveUpdateDestroyView, MerchantListView
+from core.merchants.views import (
+    MerchantCreateView, 
+    MerchantRetrieveUpdateDestroyView, 
+    MerchantListView,
+)
 
 
 app_name = 'merchants'

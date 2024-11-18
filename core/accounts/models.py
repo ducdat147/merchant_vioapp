@@ -1,10 +1,14 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
 from core.models import BaseModel
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class User(AbstractUser, BaseModel):
-    phone = models.CharField(max_length=15, blank=True)
+    phone = PhoneNumberField(
+        blank=True, 
+        region='VN',
+        help_text='Phone number format: +84xxxxxxxxx'
+    )
 
     class Meta:
         db_table = 'users'
