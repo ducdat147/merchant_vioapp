@@ -169,22 +169,6 @@ merchant-app/
 └── README.md            # Project documentation
 ```
 
-## Môi trường Production
-
-Khi triển khai lên môi trường production, cần lưu ý:
-
-1. Cập nhật các biến môi trường:
-- Tắt DEBUG
-- Thay đổi SECRET_KEY
-- Cập nhật ALLOWED_HOSTS
-- Cấu hình DATABASE_URL
-- Cấu hình MEMCACHED_LOCATION
-
-2. Sử dụng HTTPS
-3. Cấu hình CORS đúng domain
-4. Thiết lập backup cho database
-5. Monitoring và logging
-
 ## License
 
 Distributed under the MIT License. See LICENSE for more information.
